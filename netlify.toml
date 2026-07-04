@@ -1,0 +1,37 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = "npm run build"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200
+
+[[redirects]]
+  from = "/api/get"
+  to = "/.netlify/functions/get"
+  status = 200
+
+[[redirects]]
+  from = "/api/title"
+  to = "/.netlify/functions/title"
+  status = 200
+
+[[redirects]]
+  from = "/api/crawl"
+  to = "/.netlify/functions/crawl"
+  status = 200
+
+[[redirects]]
+  from = "/api/client"
+  to = "/.netlify/functions/client"
+  status = 200
+
+[[redirects]]
+  from = "/api/phase5"
+  to = "/.netlify/functions/phase5"
+  status = 200

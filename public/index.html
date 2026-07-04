@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Combined SOCKS5 Netlify Wrapper</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 18px; line-height: 1.5; }
+    input, select, button, textarea { font: inherit; width: 100%; box-sizing: border-box; margin: 8px 0; padding: 10px; }
+    button { cursor: pointer; }
+    pre { background: #f4f4f4; padding: 12px; overflow: auto; white-space: pre-wrap; }
+    code { background: #eee; padding: 2px 4px; }
+  </style>
+</head>
+<body>
+  <h1>Combined SOCKS5 Netlify Wrapper</h1>
+  <p>Private combined deploy package. Each module is still separate under <code>packages/</code>.</p>
+
+  <label for="endpoint">Endpoint</label>
+  <select id="endpoint">
+    <option value="/api/get">/api/get — raw GET</option>
+    <option value="/api/title">/api/title — title fetcher</option>
+    <option value="/api/crawl">/api/crawl — one-level link queue crawler</option>
+    <option value="/api/client">/api/client — configurable client</option>
+    <option value="/api/phase5">/api/phase5 — recursive crawl stubs</option>
+    <option value="/api/health">/api/health — health</option>
+  </select>
+
+  <label for="url">URL</label>
+  <input id="url" value="https://example.com" />
+
+  <label for="extra">Extra JSON options</label>
+  <textarea id="extra" rows="5">{"linkPattern":"example","options":{"maxRetries":2,"timeoutMs":30000},"maxDepth":1}</textarea>
+
+  <button id="run">Run</button>
+  <pre id="out">Ready.</pre>
+
+  <script>
+    const out = document.getElementById('out');
+    document.getElementById('run').addEventListener('click', async () => {
+      out.textContent = 'Running...';
+      try {
+        const endpoint = document.getElementById('endpoint').value;
+        let extra = {};
+        try { extra = JSON.parse(document.getElementById('extra').value || '{}'); }
+        catch (e) { throw new Error('Invalid Extra JSON: ' + e.message); }
+        const body = endpoint === '/api/health' ? {} : { url: document.getElementById('url').value, ...extra };
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const text = await res.text();
+        try { out.textContent = JSON.stringify(JSON.parse(text), null, 2); }
+        catch (_) { out.textContent = text; }
+      } catch (error) {
+        out.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "combined-socks5-netlify-private",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Private combined Netlify wrapper for five standalone SOCKS5 modules kept modular under packages/.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "netlify dev",
+    "dev": "netlify dev",
+    "build": "node -e \"console.log('Combined Netlify deploy ready')\"",
+    "test": "node -e \"require('./packages/socks5-http-get'); require('./packages/socks5-title-fetcher'); require('./packages/socks5-link-queue-crawler'); require('./packages/socks5-configurable-client'); require('./packages/socks5-recursive-crawl-stubs'); console.log('All modules load')\""
+  },
+  "dependencies": {
+    "@netlify/functions": "^3.0.0",
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "socks-proxy-agent": "^8.0.5"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

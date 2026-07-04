@@ -1,0 +1,29 @@
+{
+  "name": "socks5-link-queue-crawler",
+  "version": "1.0.0",
+  "description": "Standalone Netlify-ready link queue crawler that keeps SOCKS5 crawl logic separate from the HTTP wrapper.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node index.js https://example.com",
+    "start": "node index.js",
+    "netlify:dev": "netlify dev",
+    "deploy:test": "node index.js https://example.com"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "socks-proxy-agent": "^8.0.5"
+  },
+  "keywords": [
+    "socks5",
+    "proxy",
+    "crawler",
+    "cheerio",
+    "axios"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
