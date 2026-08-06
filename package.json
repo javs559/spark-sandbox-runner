@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --check server.js && node -e \"require('./server'); console.log('server loads')\""
+    "test": "node --check server.js && node test-contract.js"
   },
   "engines": {
     "node": ">=18"

@@ -14,7 +14,7 @@ app.use(express.json({ limit: '1mb' }));
 
 const SERVICE_MARKER = 'SPARK_V198_TOR_ENFORCED_SANDBOX_RUNNER_V1';
 const DEFAULT_TOR_PROXY_URL = 'socks5h://127.0.0.1:9050';
-const TOR_REQUIRED = String(process.env.TOR_REQUIRED || 'true').toLowerCase() !== 'false';
+const TOR_REQUIRED = true;
 const TOR_PROXY_URL =
   process.env.SOCKS5_PROXY_URL ||
   process.env.SOCKS_PROXY_URL ||
@@ -40,12 +40,10 @@ function normalizeUrl(input) {
 
 function getProxyUrl(body = {}) {
   const requested = body.proxyUrl || body.options?.proxyUrl || '';
-  const proxyUrl = requested || TOR_PROXY_URL;
-  if (TOR_REQUIRED && !proxyUrl) throw new Error('TOR_PROXY_REQUIRED');
-  if (TOR_REQUIRED && !/^socks5h?:\/\//i.test(proxyUrl)) {
-    throw new Error('TOR_PROXY_URL_MUST_USE_SOCKS5_OR_SOCKS5H');
-  }
-  return proxyUrl;
+  if (requested) throw new Error('REQUEST_PROXY_OVERRIDE_FORBIDDEN');
+  if (!TOR_PROXY_URL) throw new Error('TOR_PROXY_REQUIRED');
+  if (!/^socks5h:\/\//i.test(TOR_PROXY_URL)) throw new Error('TOR_PROXY_URL_MUST_USE_SOCKS5H');
+  return TOR_PROXY_URL;
 }
 
 function getAxiosConfig(body = {}) {
@@ -54,6 +52,8 @@ function getAxiosConfig(body = {}) {
   const config = {
     timeout: Number.isFinite(timeoutMs) ? timeoutMs : 30000,
     maxRedirects: 5,
+    responseType: 'text',
+    transformResponse: [(data) => data],
     validateStatus: () => true,
     headers: {
       'User-Agent': 'SparkSandboxRunner/1.0',
@@ -152,7 +152,24 @@ app.get('/api/health', async (_req, res) => {
     torReady: ready,
     proxyConfigured: true,
     proxyUrl: TOR_PROXY_URL,
-    directFallbackAllowed: false
+    directFallbackAllowed: false,
+    directFallbackUsed: false
+  });
+});
+
+app.get('/health', async (_req, res) => {
+  const ready = await torReady();
+  res.status(ready ? 200 : 503).json({
+    ok: ready,
+    marker: SERVICE_MARKER,
+    package: 'spark-sandbox-runner',
+    status: ready ? 'online' : 'tor-not-ready',
+    torRequired: true,
+    torReady: ready,
+    proxyConfigured: true,
+    proxyUrl: TOR_PROXY_URL,
+    directFallbackAllowed: false,
+    directFallbackUsed: false
   });
 });
 
@@ -180,7 +197,8 @@ app.all('/api/get', async (req, res) => {
       data: result.data
     });
   } catch (err) {
-    res.status(502).json({
+    const clientErrors = new Set(['URL_MISSING', 'URL_PROTOCOL_NOT_ALLOWED', 'REQUEST_PROXY_OVERRIDE_FORBIDDEN']);
+    res.status(clientErrors.has(err.message) ? 400 : 502).json({
       ok: false,
       marker: SERVICE_MARKER,
       module: 'socks5-http-get',
@@ -262,3 +280,4 @@ if (require.main === module) {
 }
 
 module.exports = app;
+module.exports._contract = { normalizeUrl, getProxyUrl, getAxiosConfig, readInput };
